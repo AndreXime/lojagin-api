@@ -1,0 +1,6 @@
+*.db
+tmp
+frontend/node_modules
+frontend/dist
+LojaGin
+bin

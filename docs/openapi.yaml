@@ -1,0 +1,271 @@
+openapi: 3.0.3
+
+info:
+    title: API da LojaGin
+    description: 'Documentação completa para a API da LojaGin, construída com Gin e GORM.'
+    version: 1.0.0
+
+servers:
+    - url: http://localhost:8080/api
+
+tags:
+    - name: Auth
+      description: Operações de Autenticação e Registro
+    - name: Users
+      description: Operações para gerenciamento de usuários
+
+components:
+    securitySchemes:
+        BearerAuth:
+            type: http
+            scheme: bearer
+            bearerFormat: JWT
+
+    schemas:
+        User:
+            type: object
+            description: 'Representa um usuário no sistema (resposta)'
+            properties:
+                ID:
+                    type: integer
+                    format: int64
+                    description: ID único do usuário.
+                    example: 1
+                CreatedAt:
+                    type: string
+                    format: date-time
+                    description: Data e hora de criação do registro.
+                UpdatedAt:
+                    type: string
+                    format: date-time
+                    description: Data e hora da última atualização.
+                name:
+                    type: string
+                    example: 'João da Silva'
+                email:
+                    type: string
+                    format: email
+                    example: 'joao.silva@example.com'
+
+        CreateUserRequest:
+            type: object
+            description: 'Dados necessários para criar um novo usuário'
+            properties:
+                name:
+                    type: string
+                    example: 'Maria Souza'
+                email:
+                    type: string
+                    format: email
+                    example: 'maria.souza@example.com'
+                password:
+                    type: string
+                    format: password
+                    description: 'A senha deve ter no mínimo 8 caracteres'
+                    example: 'senhaForte123'
+            required:
+                - name
+                - email
+                - password
+
+        UpdateUserRequest:
+            type: object
+            description: 'Dados para atualizar um usuário existente'
+            properties:
+                name:
+                    type: string
+                    example: 'Maria de Souza'
+                email:
+                    type: string
+                    format: email
+                    example: 'maria.desouza@example.com'
+
+        LoginUserRequest:
+            type: object
+            description: 'Credenciais para autenticação'
+            properties:
+                email:
+                    type: string
+                    format: email
+                    example: 'joao.silva@example.com'
+                password:
+                    type: string
+                    format: password
+                    example: 'senhaForte123'
+            required:
+                - email
+                - password
+
+        Error:
+            type: object
+            properties:
+                error:
+                    type: string
+                    example: 'Mensagem de erro descritiva'
+
+security:
+    - BearerAuth: []
+
+paths:
+    # --- Endpoints de Autenticação ---
+    /auth/register:
+        post:
+            tags:
+                - Auth
+            summary: Registrar um novo usuário
+            description: Cria uma nova conta de usuário no sistema.
+            security: []
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/CreateUserRequest'
+            responses:
+                '201':
+                    description: Usuário criado com sucesso
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/User'
+                '400':
+                    description: Dados inválidos ou e-mail já existe
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+
+    /auth/login:
+        post:
+            tags:
+                - Auth
+            summary: Autenticar um usuário
+            description: Realiza o login com e-mail e senha e retorna um token de acesso.
+            security: []
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/LoginUserRequest'
+            responses:
+                '200':
+                    description: Login bem-sucedido
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    token:
+                                        type: string
+                                        example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
+                '401':
+                    description: Credenciais inválidas
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+
+    /users/:
+        get:
+            tags:
+                - Users
+            summary: Listar todos os usuários
+            description: Retorna uma lista com todos os usuários cadastrados. Requer autenticação.
+            responses:
+                '200':
+                    description: Lista de usuários retornada com sucesso
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    $ref: '#/components/schemas/User'
+                '401':
+                    description: Não autorizado (token inválido ou ausente)
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+
+    /users/{id}:
+        get:
+            tags:
+                - Users
+            summary: Obter um usuário por ID
+            description: Retorna os dados de um único usuário. Requer autenticação.
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  description: ID numérico do usuário
+                  schema:
+                      type: integer
+                      example: 1
+            responses:
+                '200':
+                    description: Usuário encontrado com sucesso
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/User'
+                '404':
+                    description: Usuário não encontrado
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+                '401':
+                    description: Não autorizado
+
+        put:
+            tags:
+                - Users
+            summary: Atualizar um usuário
+            description: Atualiza o nome e/ou e-mail de um usuário existente. Requer autenticação.
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  description: ID do usuário a ser atualizado
+                  schema:
+                      type: integer
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/UpdateUserRequest'
+            responses:
+                '200':
+                    description: Usuário atualizado com sucesso
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/User'
+                '400':
+                    description: Dados inválidos
+                '404':
+                    description: Usuário não encontrado
+                '401':
+                    description: Não autorizado
+
+        delete:
+            tags:
+                - Users
+            summary: Deletar um usuário
+            description: Remove um usuário do sistema (soft delete). Requer autenticação.
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  description: ID do usuário a ser deletado
+                  schema:
+                      type: integer
+            responses:
+                '204':
+                    description: Usuário deletado com sucesso (sem conteúdo)
+                '404':
+                    description: Usuário não encontrado
+                '401':
+                    description: Não autorizado
