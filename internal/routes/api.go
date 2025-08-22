@@ -1,9 +1,9 @@
-package server
+package routes
 
 import (
-	"LojaGin/internal/auth"
 	"LojaGin/internal/middleware"
-	"LojaGin/internal/user"
+	"LojaGin/internal/modules/auth"
+	"LojaGin/internal/modules/user"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -35,8 +35,7 @@ func setupUserRoutes(api *gin.RouterGroup, db *gorm.DB) {
 	}
 }
 
-func SetupAPI(router *gin.Engine) {
-	db := InitDB()
+func SetupAPI(router *gin.Engine, db *gorm.DB) {
 	api := router.Group("/api")
 
 	setupAuthRoutes(api, db)

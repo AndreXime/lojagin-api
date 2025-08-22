@@ -1,16 +1,14 @@
 package auth
 
 import (
-	"LojaGin/internal/user"
-	"errors"
-	"os"
+	"LojaGin/internal/config"
+	"LojaGin/internal/modules/user"
+	"strconv"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
 )
-
-var jwtSecret = []byte(os.Getenv("JWT_SECRET"))
 
 type Service struct {
 	userRepo *user.UserRepository
@@ -38,11 +36,11 @@ func (s *Service) Register(req user.CreateUserRequest) (string, error) {
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"sub": createdUser.ID,
+		"sub": strconv.FormatUint(uint64(createdUser.ID), 10), // Converte ID para string
 		"exp": time.Now().Add(time.Hour * 24).Unix(),
 	})
 
-	tokenString, err := token.SignedString(jwtSecret)
+	tokenString, err := token.SignedString([]byte(config.JWT_SECRET))
 	if err != nil {
 		return "", err
 	}
@@ -53,21 +51,21 @@ func (s *Service) Register(req user.CreateUserRequest) (string, error) {
 func (s *Service) Login(req user.LoginUserRequest) (string, error) {
 	foundUser, err := s.userRepo.GetUserByEmail(req.Email)
 	if err != nil {
-		return "", errors.New("credenciais inválidas")
+		return "", ErrInvalidCredentials
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(foundUser.Password), []byte(req.Password))
 	if err != nil {
-		return "", errors.New("credenciais inválidas")
+		return "", ErrInvalidCredentials
 	}
 
 	// Gera o token JWT
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"sub": foundUser.ID,
-		"exp": time.Now().Add(time.Hour * 24).Unix(), // Token expira em 24 horas
+		"sub": strconv.FormatUint(uint64(foundUser.ID), 10), // Converte ID para string
+		"exp": time.Now().Add(time.Hour * 24).Unix(),        // Token expira em 24 horas
 	})
 
-	tokenString, err := token.SignedString(jwtSecret)
+	tokenString, err := token.SignedString([]byte(config.JWT_SECRET))
 	if err != nil {
 		return "", err
 	}

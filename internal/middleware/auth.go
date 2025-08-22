@@ -1,16 +1,14 @@
 package middleware
 
 import (
+	"LojaGin/internal/config"
 	"errors"
 	"net/http"
-	"os"
 	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 )
-
-var jwtSecret = []byte(os.Getenv("JWT_SECRET"))
 
 type AppClaims struct {
 	jwt.RegisteredClaims
@@ -39,7 +37,7 @@ func AuthMiddleware() gin.HandlerFunc {
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 				return nil, errors.New("método de assinatura inesperado")
 			}
-			return jwtSecret, nil
+			return []byte(config.JWT_SECRET), nil
 		})
 
 		if err != nil {

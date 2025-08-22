@@ -24,7 +24,7 @@ func (r *UserRepository) CreateUser(user *User) (*User, error) {
 			sqliteErr.ExtendedCode == sqlite3.ErrConstraintUnique {
 			return nil, ErrEmailExists
 		}
-		return nil, result.Error
+		return nil, ErrDatabase
 	}
 
 	user.Password = "" // nunca expor senha
@@ -38,7 +38,7 @@ func (r *UserRepository) GetUserByEmail(email string) (*User, error) {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			return nil, ErrUserNotFound
 		}
-		return nil, result.Error
+		return nil, ErrDatabase
 	}
 	return &user, nil
 }
@@ -49,15 +49,17 @@ func (r *UserRepository) GetUserByID(id int64) (*User, error) {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, ErrUserNotFound
 		}
-		return nil, err
+		return nil, ErrDatabase
 	}
 	return &user, nil
 }
 
 func (r *UserRepository) GetAllUsers() ([]User, error) {
 	var users []User
-	result := r.db.Find(&users)
-	return users, result.Error
+	if err := r.db.Find(&users).Error; err != nil {
+		return nil, ErrDatabase
+	}
+	return users, nil
 }
 
 func (r *UserRepository) IsEmailTaken(email string, excludeID int64) (bool, error) {
@@ -65,19 +67,22 @@ func (r *UserRepository) IsEmailTaken(email string, excludeID int64) (bool, erro
 	if err := r.db.Model(&User{}).
 		Where("email = ? AND id <> ?", email, excludeID).
 		Count(&count).Error; err != nil {
-		return false, err
+		return false, ErrDatabase
 	}
 	return count > 0, nil
 }
 
 func (r *UserRepository) UpdateUser(user *User) error {
-	return r.db.Save(user).Error
+	if err := r.db.Save(user).Error; err != nil {
+		return ErrDatabase
+	}
+	return nil
 }
 
 func (r *UserRepository) DeleteUser(id int64) error {
 	result := r.db.Delete(&User{}, uint(id))
 	if result.Error != nil {
-		return result.Error
+		return ErrDatabase
 	}
 	if result.RowsAffected == 0 {
 		return ErrUserNotFound

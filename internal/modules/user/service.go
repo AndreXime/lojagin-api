@@ -55,7 +55,7 @@ func (s *Service) Update(id int64, req UpdateUserRequest) (*User, error) {
 		}
 		hashed, err := bcrypt.GenerateFromPassword([]byte(pw), bcrypt.DefaultCost)
 		if err != nil {
-			return nil, err
+			return nil, ErrDatabase
 		}
 		userToUpdate.Password = string(hashed)
 	}

@@ -3,7 +3,7 @@ openapi: 3.0.3
 info:
     title: API da LojaGin
     description: 'Documentação completa para a API da LojaGin, construída com Gin e GORM.'
-    version: 1.0.0
+    version: 1.0.1
 
 servers:
     - url: http://localhost:8080/api
@@ -96,6 +96,13 @@ components:
                 - email
                 - password
 
+        SuccessMessage:
+            type: object
+            properties:
+                message:
+                    type: string
+                    example: 'Operação realizada com sucesso'
+
         Error:
             type: object
             properties:
@@ -113,7 +120,7 @@ paths:
             tags:
                 - Auth
             summary: Registrar um novo usuário
-            description: Cria uma nova conta de usuário no sistema.
+            description: Cria uma nova conta de usuário no sistema e retorna um token de acesso em um cookie HttpOnly.
             security: []
             requestBody:
                 required: true
@@ -123,13 +130,19 @@ paths:
                             $ref: '#/components/schemas/CreateUserRequest'
             responses:
                 '201':
-                    description: Usuário criado com sucesso
+                    description: Usuário criado com sucesso.
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/User'
+                                $ref: '#/components/schemas/SuccessMessage'
                 '400':
-                    description: Dados inválidos ou e-mail já existe
+                    description: Dados da requisição inválidos.
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+                '409':
+                    description: Conflito, o e-mail informado já está em uso.
                     content:
                         application/json:
                             schema:
@@ -140,7 +153,9 @@ paths:
             tags:
                 - Auth
             summary: Autenticar um usuário
-            description: Realiza o login com e-mail e senha e retorna um token de acesso.
+            description: |-
+                Realiza o login com e-mail e senha. 
+                Em caso de sucesso, retorna uma mensagem e um token de acesso JWT em um cookie HttpOnly chamado 'token'.
             security: []
             requestBody:
                 required: true
@@ -150,17 +165,18 @@ paths:
                             $ref: '#/components/schemas/LoginUserRequest'
             responses:
                 '200':
-                    description: Login bem-sucedido
+                    description: Login bem-sucedido.
+                    headers:
+                        Set-Cookie:
+                            schema:
+                                type: string
+                                example: 'token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...; Path=/; HttpOnly'
                     content:
                         application/json:
                             schema:
-                                type: object
-                                properties:
-                                    token:
-                                        type: string
-                                        example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
+                                $ref: '#/components/schemas/SuccessMessage'
                 '401':
-                    description: Credenciais inválidas
+                    description: Credenciais inválidas (e-mail ou senha incorretos).
                     content:
                         application/json:
                             schema:
@@ -174,7 +190,7 @@ paths:
             description: Retorna uma lista com todos os usuários cadastrados. Requer autenticação.
             responses:
                 '200':
-                    description: Lista de usuários retornada com sucesso
+                    description: Lista de usuários retornada com sucesso.
                     content:
                         application/json:
                             schema:
@@ -182,7 +198,7 @@ paths:
                                 items:
                                     $ref: '#/components/schemas/User'
                 '401':
-                    description: Não autorizado (token inválido ou ausente)
+                    description: Não autorizado (token inválido ou ausente).
                     content:
                         application/json:
                             schema:
@@ -204,19 +220,19 @@ paths:
                       example: 1
             responses:
                 '200':
-                    description: Usuário encontrado com sucesso
+                    description: Usuário encontrado com sucesso.
                     content:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/User'
+                '401':
+                    description: Não autorizado.
                 '404':
-                    description: Usuário não encontrado
+                    description: Usuário não encontrado.
                     content:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Error'
-                '401':
-                    description: Não autorizado
 
         put:
             tags:
@@ -238,17 +254,19 @@ paths:
                             $ref: '#/components/schemas/UpdateUserRequest'
             responses:
                 '200':
-                    description: Usuário atualizado com sucesso
+                    description: Usuário atualizado com sucesso.
                     content:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/User'
                 '400':
-                    description: Dados inválidos
-                '404':
-                    description: Usuário não encontrado
+                    description: Dados inválidos.
                 '401':
-                    description: Não autorizado
+                    description: Não autorizado.
+                '404':
+                    description: Usuário não encontrado.
+                '409':
+                    description: Conflito, o e-mail informado já está em uso por outro usuário.
 
         delete:
             tags:
@@ -264,8 +282,8 @@ paths:
                       type: integer
             responses:
                 '204':
-                    description: Usuário deletado com sucesso (sem conteúdo)
-                '404':
-                    description: Usuário não encontrado
+                    description: Usuário deletado com sucesso (sem conteúdo).
                 '401':
-                    description: Não autorizado
+                    description: Não autorizado.
+                '404':
+                    description: Usuário não encontrado.

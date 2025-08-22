@@ -1,17 +1,16 @@
-package server
+package database
 
 import (
-	"LojaGin/internal/user"
+	"LojaGin/internal/config"
+	"LojaGin/internal/modules/user"
 	"log"
 
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
 
-var dbPath = "./db.db"
-
 func InitDB() *gorm.DB {
-	db, err := gorm.Open(sqlite.Open(dbPath), &gorm.Config{})
+	db, err := gorm.Open(sqlite.Open(config.DB_URL), &gorm.Config{})
 	if err != nil {
 		log.Fatalln(err)
 	}

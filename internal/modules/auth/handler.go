@@ -1,7 +1,8 @@
 package auth
 
 import (
-	"LojaGin/internal/user"
+	"LojaGin/internal/modules/user"
+	"errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -18,13 +19,17 @@ func NewHandler(s *Service) *Handler {
 func (h *Handler) Register(c *gin.Context) {
 	var req user.CreateUserRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Dados da requisição inválidos"})
 		return
 	}
 
 	token, err := h.service.Register(req)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao registrar usuário"})
+		if errors.Is(err, user.ErrEmailExists) {
+			c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
+		} else {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Ocorreu um erro ao registrar o usuário"})
+		}
 		return
 	}
 
@@ -41,7 +46,11 @@ func (h *Handler) Login(c *gin.Context) {
 
 	token, err := h.service.Login(req)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+		if errors.Is(err, ErrInvalidCredentials) {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+		} else {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Ocorreu um erro ao tentar fazer login"})
+		}
 		return
 	}
 
