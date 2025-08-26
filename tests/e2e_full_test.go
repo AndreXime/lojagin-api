@@ -51,6 +51,10 @@ func TestMain(m *testing.M) {
 // clearDB limpa todas as tabelas para garantir que os testes sejam independentes
 func clearDB() {
 	// Deleta os registros e reseta a sequência de auto incremento do SQLite
+	db.Exec("DELETE FROM products")
+	db.Exec("UPDATE sqlite_sequence SET seq = 0 WHERE name = 'products'")
+	db.Exec("DELETE FROM categories")
+	db.Exec("UPDATE sqlite_sequence SET seq = 0 WHERE name = 'categories'")
 	db.Exec("DELETE FROM users")
 	db.Exec("UPDATE sqlite_sequence SET seq = 0 WHERE name = 'users'")
 }

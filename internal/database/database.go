@@ -2,6 +2,8 @@ package database
 
 import (
 	"LojaGin/internal/config"
+	"LojaGin/internal/modules/category"
+	"LojaGin/internal/modules/product"
 	"LojaGin/internal/modules/user"
 	"log"
 
@@ -15,7 +17,7 @@ func InitDB() *gorm.DB {
 		log.Fatalln(err)
 	}
 
-	err = db.AutoMigrate(&user.User{})
+	err = db.AutoMigrate(&user.User{}, &category.Category{}, &product.Product{})
 	if err != nil {
 		log.Fatalln(err)
 	}

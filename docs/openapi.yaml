@@ -13,6 +13,10 @@ tags:
       description: Operações de Autenticação e Registro
     - name: Users
       description: Operações para gerenciamento de usuários
+    - name: Categories
+      description: Operações para gerenciamento de categorias
+    - name: Products
+      description: Operações para gerenciamento de produtos
 
 components:
     securitySchemes:
@@ -95,6 +99,98 @@ components:
             required:
                 - email
                 - password
+
+        Category:
+            type: object
+            description: 'Representa uma categoria de produto'
+            properties:
+                ID:
+                    type: integer
+                    example: 1
+                CreatedAt:
+                    type: string
+                    format: date-time
+                UpdatedAt:
+                    type: string
+                    format: date-time
+                name:
+                    type: string
+                    example: 'Eletrônicos'
+
+        CreateCategoryRequest:
+            type: object
+            properties:
+                name:
+                    type: string
+                    example: 'Livros'
+            required:
+                - name
+
+        UpdateCategoryRequest:
+            type: object
+            properties:
+                name:
+                    type: string
+                    example: 'Livros e Revistas'
+
+        # Product Schemas
+        Product:
+            type: object
+            description: 'Representa um produto no sistema'
+            properties:
+                ID:
+                    type: integer
+                    example: 101
+                CreatedAt:
+                    type: string
+                    format: date-time
+                UpdatedAt:
+                    type: string
+                    format: date-time
+                name:
+                    type: string
+                    example: 'Notebook Gamer'
+                price:
+                    type: number
+                    format: float
+                    example: 4999.90
+                category_id:
+                    type: integer
+                    example: 1
+                category:
+                    $ref: '#/components/schemas/Category'
+
+        CreateProductRequest:
+            type: object
+            properties:
+                name:
+                    type: string
+                    example: 'Mouse sem Fio'
+                price:
+                    type: number
+                    format: float
+                    example: 89.90
+                category_id:
+                    type: integer
+                    example: 1
+            required:
+                - name
+                - price
+                - category_id
+
+        UpdateProductRequest:
+            type: object
+            properties:
+                name:
+                    type: string
+                    example: 'Mouse sem Fio 2.0'
+                price:
+                    type: number
+                    format: float
+                    example: 99.90
+                category_id:
+                    type: integer
+                    example: 1
 
         SuccessMessage:
             type: object
@@ -287,3 +383,152 @@ paths:
                     description: Não autorizado.
                 '404':
                     description: Usuário não encontrado.
+
+    /categories/:
+        get:
+            tags: [Categories]
+            summary: Listar todas as categorias
+            description: Retorna uma lista com todas as categorias de produtos. Não requer autenticação.
+            security: []
+            responses:
+                '200':
+                    description: Lista de categorias retornada com sucesso.
+                    content:
+                        {
+                            application/json:
+                                { schema: { type: array, items: { $ref: '#/components/schemas/Category' } } },
+                        }
+        post:
+            tags: [Categories]
+            summary: Criar uma nova categoria
+            description: Adiciona uma nova categoria ao sistema. Requer autenticação.
+            requestBody:
+                required: true
+                content: { application/json: { schema: { $ref: '#/components/schemas/CreateCategoryRequest' } } }
+            responses:
+                '201':
+                    {
+                        description: 'Categoria criada com sucesso.',
+                        content: { application/json: { schema: { $ref: '#/components/schemas/Category' } } },
+                    }
+                '400': { description: 'Dados inválidos.' }
+                '401': { description: 'Não autorizado.' }
+
+    /categories/{id}:
+        get:
+            tags: [Categories]
+            summary: Obter uma categoria por ID
+            description: Retorna os dados de uma única categoria. Não requer autenticação.
+            security: []
+            parameters:
+                - { name: id, in: path, required: true, description: ID da categoria, schema: { type: integer } }
+            responses:
+                '200':
+                    {
+                        description: 'Categoria encontrada.',
+                        content: { application/json: { schema: { $ref: '#/components/schemas/Category' } } },
+                    }
+                '404': { description: 'Categoria não encontrada.' }
+        put:
+            tags: [Categories]
+            summary: Atualizar uma categoria
+            description: Atualiza o nome de uma categoria. Requer autenticação.
+            parameters:
+                - { name: id, in: path, required: true, description: ID da categoria, schema: { type: integer } }
+            requestBody:
+                required: true
+                content: { application/json: { schema: { $ref: '#/components/schemas/UpdateCategoryRequest' } } }
+            responses:
+                '200':
+                    {
+                        description: 'Categoria atualizada.',
+                        content: { application/json: { schema: { $ref: '#/components/schemas/Category' } } },
+                    }
+                '400': { description: 'Dados inválidos.' }
+                '401': { description: 'Não autorizado.' }
+                '404': { description: 'Categoria não encontrada.' }
+        delete:
+            tags: [Categories]
+            summary: Deletar uma categoria
+            description: Remove uma categoria do sistema. Requer autenticação.
+            parameters:
+                - { name: id, in: path, required: true, description: ID da categoria, schema: { type: integer } }
+            responses:
+                '204': { description: 'Categoria deletada com sucesso.' }
+                '401': { description: 'Não autorizado.' }
+                '404': { description: 'Categoria não encontrada.' }
+
+    # --- Products Endpoints ---
+    /products/:
+        get:
+            tags: [Products]
+            summary: Listar todos os produtos
+            description: Retorna uma lista com todos os produtos. Não requer autenticação.
+            security: []
+            responses:
+                '200':
+                    description: Lista de produtos retornada com sucesso.
+                    content:
+                        {
+                            application/json:
+                                { schema: { type: array, items: { $ref: '#/components/schemas/Product' } } },
+                        }
+        post:
+            tags: [Products]
+            summary: Criar um novo produto
+            description: Adiciona um novo produto ao sistema. Requer autenticação.
+            requestBody:
+                required: true
+                content: { application/json: { schema: { $ref: '#/components/schemas/CreateProductRequest' } } }
+            responses:
+                '201':
+                    {
+                        description: 'Produto criado com sucesso.',
+                        content: { application/json: { schema: { $ref: '#/components/schemas/Product' } } },
+                    }
+                '400': { description: 'Dados inválidos.' }
+                '401': { description: 'Não autorizado.' }
+
+    /products/{id}:
+        get:
+            tags: [Products]
+            summary: Obter um produto por ID
+            description: Retorna os dados de um único produto. Não requer autenticação.
+            security: []
+            parameters:
+                - { name: id, in: path, required: true, description: ID do produto, schema: { type: integer } }
+            responses:
+                '200':
+                    {
+                        description: 'Produto encontrado.',
+                        content: { application/json: { schema: { $ref: '#/components/schemas/Product' } } },
+                    }
+                '404': { description: 'Produto não encontrado.' }
+        put:
+            tags: [Products]
+            summary: Atualizar um produto
+            description: Atualiza os dados de um produto. Requer autenticação.
+            parameters:
+                - { name: id, in: path, required: true, description: ID do produto, schema: { type: integer } }
+            requestBody:
+                required: true
+                content: { application/json: { schema: { $ref: '#/components/schemas/UpdateProductRequest' } } }
+            responses:
+                '200':
+                    {
+                        description: 'Produto atualizado.',
+                        content: { application/json: { schema: { $ref: '#/components/schemas/Product' } } },
+                    }
+                '400': { description: 'Dados inválidos.' }
+                '401': { description: 'Não autorizado.' }
+                '404': { description: 'Produto não encontrado.' }
+        delete:
+            tags: [Products]
+            summary: Deletar um produto
+            description: Remove um produto do sistema. Requer autenticação.
+            parameters:
+                - { name: id, in: path, required: true, description: ID do produto, schema: { type: integer } }
+            responses:
+                '204': { description: 'Produto deletado com sucesso.' }
+                '401': { description: 'Não autorizado.' }
+                '404': { description: 'Produto não encontrado.' }

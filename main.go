@@ -10,13 +10,19 @@ import (
 )
 
 func main() {
-	gin.SetMode(gin.DebugMode)
+	gin.SetMode(gin.ReleaseMode)
+	router := gin.Default()
+	router.Use(gin.Recovery())
+
 	config.InitEnv()
 	db := database.InitDB()
-	router := gin.Default()
 
 	docs.SetupDocs(router)
 	routes.SetupAPI(router, db)
+
+	if config.ENV_MODE != "production" {
+		config.PrintRoutes(router)
+	}
 
 	if err := router.Run(":8080"); err != nil {
 		panic(err)
