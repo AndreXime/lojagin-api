@@ -1,63 +1,17 @@
 package tests
 
 import (
-	"LojaGin/internal/config"
-	"LojaGin/internal/database"
 	"LojaGin/internal/modules/user"
-	"LojaGin/internal/routes"
 	"bytes"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"testing"
 	"time"
 
-	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
-	"gorm.io/gorm"
 )
-
-var router *gin.Engine
-var db *gorm.DB
-
-func TestMain(m *testing.M) {
-	gin.SetMode(gin.TestMode)
-
-	// 2. Define um nome para o banco de dados de teste.
-	config.DB_URL = "test_e2e.db"
-	config.JWT_SECRET = "segredo_para_testes_123456"
-
-	// 3. Garante que qualquer arquivo de DB de um teste anterior seja removido ANTES de começar.
-	// Isso garante um estado 100% limpo.
-	os.Remove(config.DB_URL)
-
-	// 4. Agora, inicializa uma nova conexão de banco de dados limpa.
-	db = database.InitDB()
-
-	// 5. Cria o router e injeta a conexão do DB.
-	router = gin.Default()
-	routes.SetupAPI(router, db)
-
-	// 6. Roda os testes.
-	exitCode := m.Run()
-
-	// 7. Limpeza final após todos os testes.
-	os.Remove(config.DB_URL)
-	os.Exit(exitCode)
-}
-
-// clearDB limpa todas as tabelas para garantir que os testes sejam independentes
-func clearDB() {
-	// Deleta os registros e reseta a sequência de auto incremento do SQLite
-	db.Exec("DELETE FROM products")
-	db.Exec("UPDATE sqlite_sequence SET seq = 0 WHERE name = 'products'")
-	db.Exec("DELETE FROM categories")
-	db.Exec("UPDATE sqlite_sequence SET seq = 0 WHERE name = 'categories'")
-	db.Exec("DELETE FROM users")
-	db.Exec("UPDATE sqlite_sequence SET seq = 0 WHERE name = 'users'")
-}
 
 // TestAuthEndpoints cobre os cenários de registro e login
 func TestAuthEndpoints(t *testing.T) {

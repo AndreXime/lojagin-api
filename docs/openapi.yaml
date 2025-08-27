@@ -17,6 +17,8 @@ tags:
       description: Operações para gerenciamento de categorias
     - name: Products
       description: Operações para gerenciamento de produtos
+    - name: Cart
+      description: Operações do carrinho de compras
 
 components:
     securitySchemes:
@@ -30,398 +32,249 @@ components:
             type: object
             description: 'Representa um usuário no sistema (resposta)'
             properties:
-                ID:
-                    type: integer
-                    format: int64
-                    description: ID único do usuário.
-                    example: 1
-                CreatedAt:
-                    type: string
-                    format: date-time
-                    description: Data e hora de criação do registro.
-                UpdatedAt:
-                    type: string
-                    format: date-time
-                    description: Data e hora da última atualização.
-                name:
-                    type: string
-                    example: 'João da Silva'
-                email:
-                    type: string
-                    format: email
-                    example: 'joao.silva@example.com'
-
-        CreateUserRequest:
-            type: object
-            description: 'Dados necessários para criar um novo usuário'
-            properties:
-                name:
-                    type: string
-                    example: 'Maria Souza'
-                email:
-                    type: string
-                    format: email
-                    example: 'maria.souza@example.com'
-                password:
-                    type: string
-                    format: password
-                    description: 'A senha deve ter no mínimo 8 caracteres'
-                    example: 'senhaForte123'
-            required:
-                - name
-                - email
-                - password
-
-        UpdateUserRequest:
-            type: object
-            description: 'Dados para atualizar um usuário existente'
-            properties:
-                name:
-                    type: string
-                    example: 'Maria de Souza'
-                email:
-                    type: string
-                    format: email
-                    example: 'maria.desouza@example.com'
-
-        LoginUserRequest:
-            type: object
-            description: 'Credenciais para autenticação'
-            properties:
-                email:
-                    type: string
-                    format: email
-                    example: 'joao.silva@example.com'
-                password:
-                    type: string
-                    format: password
-                    example: 'senhaForte123'
-            required:
-                - email
-                - password
+                ID: { type: integer, format: int64, example: 1 }
+                CreatedAt: { type: string, format: date-time }
+                UpdatedAt: { type: string, format: date-time }
+                name: { type: string, example: 'João da Silva' }
+                email: { type: string, format: email, example: 'joao.silva@example.com' }
 
         Category:
             type: object
             description: 'Representa uma categoria de produto'
             properties:
-                ID:
-                    type: integer
-                    example: 1
-                CreatedAt:
-                    type: string
-                    format: date-time
-                UpdatedAt:
-                    type: string
-                    format: date-time
-                name:
-                    type: string
-                    example: 'Eletrônicos'
+                ID: { type: integer, example: 1 }
+                CreatedAt: { type: string, format: date-time }
+                UpdatedAt: { type: string, format: date-time }
+                name: { type: string, example: 'Eletrônicos' }
 
-        CreateCategoryRequest:
-            type: object
-            properties:
-                name:
-                    type: string
-                    example: 'Livros'
-            required:
-                - name
-
-        UpdateCategoryRequest:
-            type: object
-            properties:
-                name:
-                    type: string
-                    example: 'Livros e Revistas'
-
-        # Product Schemas
         Product:
             type: object
             description: 'Representa um produto no sistema'
             properties:
-                ID:
-                    type: integer
-                    example: 101
-                CreatedAt:
-                    type: string
-                    format: date-time
-                UpdatedAt:
-                    type: string
-                    format: date-time
-                name:
-                    type: string
-                    example: 'Notebook Gamer'
-                price:
-                    type: number
-                    format: float
-                    example: 4999.90
-                category_id:
-                    type: integer
-                    example: 1
-                category:
-                    $ref: '#/components/schemas/Category'
+                ID: { type: integer, example: 101 }
+                CreatedAt: { type: string, format: date-time }
+                UpdatedAt: { type: string, format: date-time }
+                name: { type: string, example: 'Notebook Gamer' }
+                price: { type: number, format: float, example: 4999.90 }
+                category_id: { type: integer, example: 1 }
+                category: { $ref: '#/components/schemas/Category' }
 
-        CreateProductRequest:
+        CartItem:
             type: object
             properties:
-                name:
-                    type: string
-                    example: 'Mouse sem Fio'
-                price:
-                    type: number
-                    format: float
-                    example: 89.90
-                category_id:
-                    type: integer
-                    example: 1
-            required:
-                - name
-                - price
-                - category_id
+                ID: { type: integer }
+                product_id: { type: integer }
+                quantity: { type: integer }
+                product: { $ref: '#/components/schemas/Product' }
 
-        UpdateProductRequest:
+        Cart:
             type: object
             properties:
-                name:
-                    type: string
-                    example: 'Mouse sem Fio 2.0'
-                price:
-                    type: number
-                    format: float
-                    example: 99.90
-                category_id:
-                    type: integer
-                    example: 1
+                ID: { type: integer }
+                user_id: { type: integer }
+                items: { type: array, items: { $ref: '#/components/schemas/CartItem' } }
 
+        OrderItem:
+            type: object
+            properties:
+                product: { $ref: '#/components/schemas/Product' }
+                quantity: { type: integer }
+                price: { type: number, format: float, description: 'Preço do produto no momento da compra' }
+
+        Order:
+            type: object
+            properties:
+                ID: { type: integer }
+                user_id: { type: integer }
+                total: { type: number, format: float }
+                order_items: { type: array, items: { $ref: '#/components/schemas/OrderItem' } }
+
+        # --- Respostas Genéricas ---
         SuccessMessage:
             type: object
             properties:
-                message:
-                    type: string
-                    example: 'Operação realizada com sucesso'
+                message: { type: string, example: 'Operação realizada com sucesso' }
 
         Error:
             type: object
             properties:
-                error:
-                    type: string
-                    example: 'Mensagem de erro descritiva'
+                error: { type: string, example: 'Mensagem de erro descritiva' }
 
 security:
     - BearerAuth: []
 
 paths:
-    # --- Endpoints de Autenticação ---
+    # --- Auth Endpoints ---
     /auth/register:
         post:
-            tags:
-                - Auth
+            tags: [Auth]
             summary: Registrar um novo usuário
-            description: Cria uma nova conta de usuário no sistema e retorna um token de acesso em um cookie HttpOnly.
             security: []
             requestBody:
                 required: true
                 content:
                     application/json:
                         schema:
-                            $ref: '#/components/schemas/CreateUserRequest'
+                            type: object
+                            properties:
+                                name: { type: string, example: 'Maria Souza' }
+                                email: { type: string, format: email, example: 'maria.souza@example.com' }
+                                password:
+                                    {
+                                        type: string,
+                                        format: password,
+                                        description: 'Mínimo 8 caracteres',
+                                        example: 'senhaForte123',
+                                    }
+                            required: [name, email, password]
             responses:
                 '201':
-                    description: Usuário criado com sucesso.
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/SuccessMessage'
+                    {
+                        description: 'Usuário criado com sucesso.',
+                        content: { application/json: { schema: { $ref: '#/components/schemas/SuccessMessage' } } },
+                    }
                 '400':
-                    description: Dados da requisição inválidos.
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Error'
+                    {
+                        description: 'Dados inválidos.',
+                        content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } },
+                    }
                 '409':
-                    description: Conflito, o e-mail informado já está em uso.
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Error'
+                    {
+                        description: 'E-mail já está em uso.',
+                        content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } },
+                    }
 
     /auth/login:
         post:
-            tags:
-                - Auth
+            tags: [Auth]
             summary: Autenticar um usuário
-            description: |-
-                Realiza o login com e-mail e senha. 
-                Em caso de sucesso, retorna uma mensagem e um token de acesso JWT em um cookie HttpOnly chamado 'token'.
             security: []
             requestBody:
                 required: true
                 content:
                     application/json:
                         schema:
-                            $ref: '#/components/schemas/LoginUserRequest'
+                            type: object
+                            properties:
+                                email: { type: string, format: email, example: 'joao.silva@example.com' }
+                                password: { type: string, format: password, example: 'senhaForte123' }
+                            required: [email, password]
             responses:
                 '200':
-                    description: Login bem-sucedido.
-                    headers:
-                        Set-Cookie:
-                            schema:
-                                type: string
-                                example: 'token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...; Path=/; HttpOnly'
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/SuccessMessage'
+                    {
+                        description: 'Login bem-sucedido.',
+                        content: { application/json: { schema: { $ref: '#/components/schemas/SuccessMessage' } } },
+                    }
                 '401':
-                    description: Credenciais inválidas (e-mail ou senha incorretos).
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Error'
+                    {
+                        description: 'Credenciais inválidas.',
+                        content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } },
+                    }
 
+    # --- Users Endpoints ---
     /users/:
         get:
-            tags:
-                - Users
+            tags: [Users]
             summary: Listar todos os usuários
-            description: Retorna uma lista com todos os usuários cadastrados. Requer autenticação.
             responses:
                 '200':
-                    description: Lista de usuários retornada com sucesso.
-                    content:
-                        application/json:
-                            schema:
-                                type: array
-                                items:
-                                    $ref: '#/components/schemas/User'
-                '401':
-                    description: Não autorizado (token inválido ou ausente).
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Error'
+                    {
+                        description: 'Lista de usuários.',
+                        content:
+                            {
+                                application/json:
+                                    { schema: { type: array, items: { $ref: '#/components/schemas/User' } } },
+                            },
+                    }
+                '401': { description: 'Não autorizado.' }
 
     /users/{id}:
         get:
-            tags:
-                - Users
+            tags: [Users]
             summary: Obter um usuário por ID
-            description: Retorna os dados de um único usuário. Requer autenticação.
             parameters:
-                - name: id
-                  in: path
-                  required: true
-                  description: ID numérico do usuário
-                  schema:
-                      type: integer
-                      example: 1
+                - { name: id, in: path, required: true, schema: { type: integer } }
             responses:
                 '200':
-                    description: Usuário encontrado com sucesso.
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/User'
-                '401':
-                    description: Não autorizado.
-                '404':
-                    description: Usuário não encontrado.
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Error'
-
+                    {
+                        description: 'Usuário encontrado.',
+                        content: { application/json: { schema: { $ref: '#/components/schemas/User' } } },
+                    }
+                '401': { description: 'Não autorizado.' }
+                '404': { description: 'Usuário não encontrado.' }
         put:
-            tags:
-                - Users
+            tags: [Users]
             summary: Atualizar um usuário
-            description: Atualiza o nome e/ou e-mail de um usuário existente. Requer autenticação.
             parameters:
-                - name: id
-                  in: path
-                  required: true
-                  description: ID do usuário a ser atualizado
-                  schema:
-                      type: integer
+                - { name: id, in: path, required: true, schema: { type: integer } }
             requestBody:
-                required: true
                 content:
                     application/json:
                         schema:
-                            $ref: '#/components/schemas/UpdateUserRequest'
+                            type: object
+                            properties:
+                                name: { type: string, example: 'Maria de Souza' }
+                                email: { type: string, format: email, example: 'maria.desouza@example.com' }
             responses:
                 '200':
-                    description: Usuário atualizado com sucesso.
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/User'
-                '400':
-                    description: Dados inválidos.
-                '401':
-                    description: Não autorizado.
-                '404':
-                    description: Usuário não encontrado.
-                '409':
-                    description: Conflito, o e-mail informado já está em uso por outro usuário.
-
+                    {
+                        description: 'Usuário atualizado.',
+                        content: { application/json: { schema: { $ref: '#/components/schemas/User' } } },
+                    }
+                '401': { description: 'Não autorizado.' }
+                '404': { description: 'Usuário não encontrado.' }
         delete:
-            tags:
-                - Users
+            tags: [Users]
             summary: Deletar um usuário
-            description: Remove um usuário do sistema (soft delete). Requer autenticação.
             parameters:
-                - name: id
-                  in: path
-                  required: true
-                  description: ID do usuário a ser deletado
-                  schema:
-                      type: integer
+                - { name: id, in: path, required: true, schema: { type: integer } }
             responses:
-                '204':
-                    description: Usuário deletado com sucesso (sem conteúdo).
-                '401':
-                    description: Não autorizado.
-                '404':
-                    description: Usuário não encontrado.
+                '204': { description: 'Usuário deletado com sucesso.' }
+                '401': { description: 'Não autorizado.' }
+                '404': { description: 'Usuário não encontrado.' }
 
+    # --- Categories Endpoints ---
     /categories/:
         get:
             tags: [Categories]
             summary: Listar todas as categorias
-            description: Retorna uma lista com todas as categorias de produtos. Não requer autenticação.
             security: []
             responses:
                 '200':
-                    description: Lista de categorias retornada com sucesso.
-                    content:
-                        {
-                            application/json:
-                                { schema: { type: array, items: { $ref: '#/components/schemas/Category' } } },
-                        }
+                    {
+                        description: 'Lista de categorias.',
+                        content:
+                            {
+                                application/json:
+                                    { schema: { type: array, items: { $ref: '#/components/schemas/Category' } } },
+                            },
+                    }
         post:
             tags: [Categories]
             summary: Criar uma nova categoria
-            description: Adiciona uma nova categoria ao sistema. Requer autenticação.
             requestBody:
                 required: true
-                content: { application/json: { schema: { $ref: '#/components/schemas/CreateCategoryRequest' } } }
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            properties: { name: { type: string, example: 'Livros' } }
+                            required: [name]
             responses:
                 '201':
                     {
-                        description: 'Categoria criada com sucesso.',
+                        description: 'Categoria criada.',
                         content: { application/json: { schema: { $ref: '#/components/schemas/Category' } } },
                     }
-                '400': { description: 'Dados inválidos.' }
                 '401': { description: 'Não autorizado.' }
 
     /categories/{id}:
         get:
             tags: [Categories]
             summary: Obter uma categoria por ID
-            description: Retorna os dados de uma única categoria. Não requer autenticação.
             security: []
             parameters:
-                - { name: id, in: path, required: true, description: ID da categoria, schema: { type: integer } }
+                - { name: id, in: path, required: true, schema: { type: integer } }
             responses:
                 '200':
                     {
@@ -432,27 +285,27 @@ paths:
         put:
             tags: [Categories]
             summary: Atualizar uma categoria
-            description: Atualiza o nome de uma categoria. Requer autenticação.
             parameters:
-                - { name: id, in: path, required: true, description: ID da categoria, schema: { type: integer } }
+                - { name: id, in: path, required: true, schema: { type: integer } }
             requestBody:
-                required: true
-                content: { application/json: { schema: { $ref: '#/components/schemas/UpdateCategoryRequest' } } }
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            properties: { name: { type: string, example: 'Livros e Revistas' } }
             responses:
                 '200':
                     {
                         description: 'Categoria atualizada.',
                         content: { application/json: { schema: { $ref: '#/components/schemas/Category' } } },
                     }
-                '400': { description: 'Dados inválidos.' }
                 '401': { description: 'Não autorizado.' }
                 '404': { description: 'Categoria não encontrada.' }
         delete:
             tags: [Categories]
             summary: Deletar uma categoria
-            description: Remove uma categoria do sistema. Requer autenticação.
             parameters:
-                - { name: id, in: path, required: true, description: ID da categoria, schema: { type: integer } }
+                - { name: id, in: path, required: true, schema: { type: integer } }
             responses:
                 '204': { description: 'Categoria deletada com sucesso.' }
                 '401': { description: 'Não autorizado.' }
@@ -463,40 +316,46 @@ paths:
         get:
             tags: [Products]
             summary: Listar todos os produtos
-            description: Retorna uma lista com todos os produtos. Não requer autenticação.
             security: []
             responses:
                 '200':
-                    description: Lista de produtos retornada com sucesso.
-                    content:
-                        {
-                            application/json:
-                                { schema: { type: array, items: { $ref: '#/components/schemas/Product' } } },
-                        }
+                    {
+                        description: 'Lista de produtos.',
+                        content:
+                            {
+                                application/json:
+                                    { schema: { type: array, items: { $ref: '#/components/schemas/Product' } } },
+                            },
+                    }
         post:
             tags: [Products]
             summary: Criar um novo produto
-            description: Adiciona um novo produto ao sistema. Requer autenticação.
             requestBody:
                 required: true
-                content: { application/json: { schema: { $ref: '#/components/schemas/CreateProductRequest' } } }
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            properties:
+                                name: { type: string, example: 'Mouse sem Fio' }
+                                price: { type: number, format: float, example: 89.90 }
+                                category_id: { type: integer, example: 1 }
+                            required: [name, price, category_id]
             responses:
                 '201':
                     {
-                        description: 'Produto criado com sucesso.',
+                        description: 'Produto criado.',
                         content: { application/json: { schema: { $ref: '#/components/schemas/Product' } } },
                     }
-                '400': { description: 'Dados inválidos.' }
                 '401': { description: 'Não autorizado.' }
 
     /products/{id}:
         get:
             tags: [Products]
             summary: Obter um produto por ID
-            description: Retorna os dados de um único produto. Não requer autenticação.
             security: []
             parameters:
-                - { name: id, in: path, required: true, description: ID do produto, schema: { type: integer } }
+                - { name: id, in: path, required: true, schema: { type: integer } }
             responses:
                 '200':
                     {
@@ -507,28 +366,105 @@ paths:
         put:
             tags: [Products]
             summary: Atualizar um produto
-            description: Atualiza os dados de um produto. Requer autenticação.
             parameters:
-                - { name: id, in: path, required: true, description: ID do produto, schema: { type: integer } }
+                - { name: id, in: path, required: true, schema: { type: integer } }
             requestBody:
-                required: true
-                content: { application/json: { schema: { $ref: '#/components/schemas/UpdateProductRequest' } } }
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            properties:
+                                name: { type: string, example: 'Mouse sem Fio 2.0' }
+                                price: { type: number, format: float, example: 99.90 }
+                                category_id: { type: integer, example: 1 }
             responses:
                 '200':
                     {
                         description: 'Produto atualizado.',
                         content: { application/json: { schema: { $ref: '#/components/schemas/Product' } } },
                     }
-                '400': { description: 'Dados inválidos.' }
                 '401': { description: 'Não autorizado.' }
                 '404': { description: 'Produto não encontrado.' }
         delete:
             tags: [Products]
             summary: Deletar um produto
-            description: Remove um produto do sistema. Requer autenticação.
             parameters:
-                - { name: id, in: path, required: true, description: ID do produto, schema: { type: integer } }
+                - { name: id, in: path, required: true, schema: { type: integer } }
             responses:
                 '204': { description: 'Produto deletado com sucesso.' }
                 '401': { description: 'Não autorizado.' }
                 '404': { description: 'Produto não encontrado.' }
+
+    # --- Cart Endpoints ---
+    /cart/:
+        get:
+            tags: [Cart]
+            summary: Visualizar o carrinho
+            responses:
+                '200':
+                    {
+                        description: 'Carrinho retornado.',
+                        content: { application/json: { schema: { $ref: '#/components/schemas/Cart' } } },
+                    }
+                '401': { description: 'Não autorizado.' }
+    /cart/add:
+        post:
+            tags: [Cart]
+            summary: Adicionar item ao carrinho
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            properties:
+                                product_id: { type: integer, example: 101 }
+                                quantity: { type: integer, example: 1 }
+                            required: [product_id, quantity]
+            responses:
+                '200':
+                    {
+                        description: 'Item adicionado.',
+                        content: { application/json: { schema: { $ref: '#/components/schemas/Cart' } } },
+                    }
+                '401': { description: 'Não autorizado.' }
+    /cart/remove:
+        post:
+            tags: [Cart]
+            summary: Remover item do carrinho
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            properties:
+                                product_id: { type: integer, example: 101 }
+                                quantity: { type: integer, example: 1 }
+                            required: [product_id, quantity]
+            responses:
+                '200':
+                    {
+                        description: 'Item removido.',
+                        content: { application/json: { schema: { $ref: '#/components/schemas/Cart' } } },
+                    }
+                '401': { description: 'Não autorizado.' }
+    /cart/clear:
+        delete:
+            tags: [Cart]
+            summary: Esvaziar o carrinho
+            responses:
+                '204': { description: 'Carrinho esvaziado.' }
+                '401': { description: 'Não autorizado.' }
+    /cart/checkout:
+        post:
+            tags: [Cart]
+            summary: Finalizar a compra (Checkout)
+            responses:
+                '201':
+                    {
+                        description: 'Pedido criado.',
+                        content: { application/json: { schema: { $ref: '#/components/schemas/Order' } } },
+                    }
+                '400': { description: 'Carrinho está vazio.' }
+                '401': { description: 'Não autorizado.' }

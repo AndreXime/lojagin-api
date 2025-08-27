@@ -3,6 +3,7 @@ package routes
 import (
 	"LojaGin/internal/middleware"
 	"LojaGin/internal/modules/auth"
+	"LojaGin/internal/modules/cart"
 	"LojaGin/internal/modules/category"
 	"LojaGin/internal/modules/product"
 	"LojaGin/internal/modules/user"
@@ -75,6 +76,21 @@ func setupProductRoutes(api *gin.RouterGroup, db *gorm.DB) {
 	}
 }
 
+func setupCartRoutes(api *gin.RouterGroup, db *gorm.DB) {
+	cartRepo := cart.NewRepository(db)
+	cartService := cart.NewService(cartRepo)
+	cartHandler := cart.NewHandler(cartService)
+
+	cartRoutes := api.Group("/cart").Use(middleware.AuthMiddleware())
+	{
+		cartRoutes.GET("/", cartHandler.GetCart)
+		cartRoutes.POST("/add", cartHandler.AddToCart)
+		cartRoutes.POST("/remove", cartHandler.RemoveFromCart)
+		cartRoutes.DELETE("/clear", cartHandler.ClearCart)
+		cartRoutes.POST("/checkout", cartHandler.Checkout)
+	}
+}
+
 func SetupAPI(router *gin.Engine, db *gorm.DB) {
 	api := router.Group("/api")
 
@@ -82,4 +98,5 @@ func SetupAPI(router *gin.Engine, db *gorm.DB) {
 	setupUserRoutes(api, db)
 	setupCategoryRoutes(api, db)
 	setupProductRoutes(api, db)
+	setupCartRoutes(api, db)
 }
