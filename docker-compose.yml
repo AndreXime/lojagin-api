@@ -1,0 +1,8 @@
+services:
+    api:
+        build:
+            context: .
+            dockerfile: dockerfile
+        command: ['/app/api']
+        ports:
+            - '8080:8080'

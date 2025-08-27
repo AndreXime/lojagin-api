@@ -30,3 +30,9 @@ migrate-up:
 migrate-down: 
 	@go build -o $(MIGRATE_BIN) $(MIGRATE_CMD)
 	@$(MIGRATE_BIN) down
+
+docker-run-api:
+	docker compose up
+
+docker-run-migrations:
+	docker compose run --rm api /app/migrate
