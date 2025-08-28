@@ -3,7 +3,7 @@ package main
 import (
 	"LojaGin/internal/config"
 	"LojaGin/internal/database"
-	"LojaGin/internal/seeder"
+	"LojaGin/internal/database/seeder"
 	"log"
 )
 

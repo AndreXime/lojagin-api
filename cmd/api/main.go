@@ -24,7 +24,7 @@ func main() {
 		config.PrintRoutes(router)
 	}
 
-	if err := router.Run(":8080"); err != nil {
+	if err := router.Run(":" + config.PORT); err != nil {
 		panic(err)
 	}
 }

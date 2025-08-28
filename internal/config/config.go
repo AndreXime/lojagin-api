@@ -2,29 +2,23 @@ package config
 
 import "os"
 
-var JWT_SECRET string
-var DB_URL string
-var ENV_MODE string
+var (
+	JWT_SECRET = "DNOASBDOABD@#!&*(#@!&#(*))"
+	DB_URL     = "db.db"
+	PORT       = "8080"
+
+	// ENV_MODE pode ser mudado com tag na build dev
+	ENV_MODE = "production"
+)
 
 func InitEnv() {
-	value := os.Getenv("JWT_SECRET")
-	if value == "" {
-		JWT_SECRET = "DNOASBDOABD@#!&*(#@!&#(*))"
-	} else {
-		JWT_SECRET = value
+	if v := os.Getenv("JWT_SECRET"); v != "" {
+		JWT_SECRET = v
 	}
-
-	value = os.Getenv("DB_URL")
-	if value == "" {
-		DB_URL = "db.db"
-	} else {
-		DB_URL = value
+	if v := os.Getenv("DB_URL"); v != "" {
+		DB_URL = v
 	}
-
-	value = os.Getenv("ENV_MODE")
-	if value == "" {
-		ENV_MODE = "dev"
-	} else {
-		ENV_MODE = value
+	if v := os.Getenv("PORT"); v != "" {
+		PORT = v
 	}
 }

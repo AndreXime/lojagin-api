@@ -5,16 +5,15 @@ API_BIN=./bin/api
 SEEDER_BIN=./bin/seeder
 MIGRATE_BIN=./bin/migrate
 
-build:
-	@go build -o $(API_BIN) $(API_CMD)
-
 dev:
-	@JWT_SECRET="DBIUAB!!312312ADHI"
 	@air \
-	 --build.cmd "clear && make -s build" \
-	 --build.bin "$(API_BIN)" \
+	 --build.cmd "clear && go build -tags=dev -o ./tmp/dev $(API_CMD)" \
+	 --build.bin "./tmp/dev" \
 	 --build.exclude_dir "bin,tmp" \
 	 --build.include_ext "go,yaml"
+
+build:
+	@go build -o $(API_BIN) $(API_CMD)
 
 test:
 	@go test ./tests
