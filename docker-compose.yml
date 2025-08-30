@@ -4,5 +4,27 @@ services:
             context: .
             dockerfile: dockerfile
         command: ['/app/api']
+        environment:
+            DB_URL: 'postgres://sysAdmin:lojaginDB@db:5432/devDB?sslmode=disable'
+            JWT_SECRET: 'IODAJOIDJAOIDAOID'
         ports:
             - '8080:8080'
+        networks:
+            - default
+
+    db:
+        image: postgres:16-alpine
+        container_name: postgres_db
+        restart: always
+        environment:
+            DB_HOST: db
+            POSTGRES_USER: sysAdmin
+            POSTGRES_PASSWORD: lojaginDB
+            POSTGRES_DB: devDB
+        ports:
+            - '5432:5432'
+        volumes:
+            - postgres_data:/var/lib/postgresql/data
+
+volumes:
+    postgres_data:

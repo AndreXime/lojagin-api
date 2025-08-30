@@ -6,32 +6,36 @@ SEEDER_BIN=./bin/seeder
 MIGRATE_BIN=./bin/migrate
 
 dev:
-	@air \
-	 --build.cmd "clear && go build -tags=dev -o ./tmp/dev $(API_CMD)" \
-	 --build.bin "./tmp/dev" \
-	 --build.exclude_dir "bin,tmp" \
-	 --build.include_ext "go,yaml"
+	@docker compose up -d db
+	@bash -c 'trap "docker compose down; exit" INT; \
+	  air --build.cmd "clear && go build -tags=dev -o ./tmp/dev $(API_CMD)" \
+	  --build.bin "./tmp/dev" \
+	  --build.exclude_dir "bin,tmp" \
+	  --build.include_ext "go,yaml"'
 
 build:
 	@go build -o $(API_BIN) $(API_CMD)
 
 test:
-	@go test ./tests
+	@docker compose up -d db
+	@bash -c 'trap "docker compose down; exit" INT; go test -tags=dev ./tests'
 
-seed: 
-	@go build -o $(SEEDER_BIN) $(SEEDER_CMD)
+seed:
+	@go build -tags=dev -o $(SEEDER_BIN) $(SEEDER_CMD)
 	@$(SEEDER_BIN)
 
 migrate-up:
-	@go build -o $(MIGRATE_BIN) $(MIGRATE_CMD)
+	@docker compose up -d db
+	@go build -tags=dev -o $(MIGRATE_BIN) $(MIGRATE_CMD)
 	@$(MIGRATE_BIN) up
 
-migrate-down: 
-	@go build -o $(MIGRATE_BIN) $(MIGRATE_CMD)
+migrate-down:
+	@docker compose up -d db
+	@go build -tags=dev -o $(MIGRATE_BIN) $(MIGRATE_CMD)
 	@$(MIGRATE_BIN) down
 
-docker-run-api:
+run-api:
 	docker compose up
 
-docker-run-migrations:
+run-migrations:
 	docker compose run --rm api /app/migrate

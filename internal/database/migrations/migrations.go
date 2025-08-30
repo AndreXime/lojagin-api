@@ -31,13 +31,13 @@ func GetAllMigrations(db *gorm.DB) *gormigrate.Gormigrate {
 			Rollback: func(tx *gorm.DB) error {
 				log.Println("Revertendo migração: 20250826_initial_schema")
 				return tx.Migrator().DropTable(
-					"order_items",
-					"orders",
-					"cart_items",
-					"carts",
-					"products",
-					"categories",
-					"users",
+					&cart.OrderItem{},
+					&cart.Order{},
+					&cart.CartItem{},
+					&cart.Cart{},
+					&product.Product{},
+					&category.Category{},
+					&user.User{},
 				)
 			},
 		},
